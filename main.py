@@ -2,6 +2,9 @@ from fastmcp import FastMCP
 import os
 import aiosqlite  # Changed: sqlite3 → aiosqlite
 import tempfile
+from prefect import flow
+import threading
+
 # Use temporary directory which should be writable
 TEMP_DIR = tempfile.gettempdir()
 DB_PATH = os.path.join(TEMP_DIR, "expenses.db")
@@ -127,6 +130,10 @@ def categories():
         return f'{{"error": "Could not load categories: {str(e)}"}}'
 
 # Start the server
-if __name__ == "__main__":
+@flow(name="mcp-expense-server")
+def run_mcp_server():
+    """Run the FastMCP expense tracker server."""
     mcp.run(transport="http", host="0.0.0.0", port=8000)
-    # mcp.run()
+
+if __name__ == "__main__":
+    run_mcp_server()
